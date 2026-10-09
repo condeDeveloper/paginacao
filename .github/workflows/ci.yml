@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.so }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        so: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Testes
+        run: mvn -B -ntp verify
+
+      - name: o otimo de Belady contra as politicas
+        run: mvn -B -ntp -q exec:java -Dexec.args="definicao"
+
+      - name: a anomalia de Belady
+        run: mvn -B -ntp -q exec:java -Dexec.args="anomalia"
+
+      - name: a propriedade de inclusao
+        run: mvn -B -ntp -q exec:java -Dexec.args="inclusao"
+
+      - name: o laco que derruba a LRU
+        run: mvn -B -ntp -q exec:java -Dexec.args="laco"
+
+      - name: o custo do proprio juiz
+        run: mvn -B -ntp -q exec:java -Dexec.args="juiz"
+
+      - name: o custo de cada politica
+        run: mvn -B -ntp -q exec:java -Dexec.args="custo"
+
+      - name: Relatorios de teste
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-${{ matrix.so }}
+          path: target/surefire-reports
